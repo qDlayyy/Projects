@@ -7,6 +7,16 @@ from rest_framework.response import Response
 from django.utils.crypto import get_random_string
 from rest_framework.views import APIView
 
+from django.contrib.auth import login
+from django.contrib.auth.models import User
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib.sites.shortcuts import get_current_site
+from django.core.mail import EmailMessage
+from django.shortcuts import render, redirect
+from django.template.loader import render_to_string
+from django.utils.encoding import force_bytes, force_str
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+
 
 class AdminStoreBaseView(generics.ListCreateAPIView):
     queryset = StoreBase.objects.all()
@@ -147,13 +157,30 @@ class UserRegisterView(generics.CreateAPIView):
 
         return Response({
             'detail': 'The email was sent successfully.',
-            'instructions': 'Follow the link to create an account.', 
-            'temprorary email': f'{comfirmation_link}'}, 
+            'instructions': 'Follow the link to create an account.'},
             status=status.HTTP_201_CREATED)
 
 
     def send_email(self, user, token):
-        pass
+        current_site = self.request.build_absolute_uri()
+        comfirmation_link = current_site + token
+        mail_subject = 'Account activation'
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        message = render_to_string('activate_template.html', {
+        'user': user,
+        'domain': current_site,
+        'uid': uid,
+        'link': comfirmation_link,
+        })
+
+        email = EmailMessage(
+            mail_subject, 
+            message, 
+            to=[user.email]
+        )
+
+        email.send()
+        
 
 user_register_view = UserRegisterView.as_view()
 

@@ -9,7 +9,7 @@
 - Now it's ready to run.
 
 ### Important:
-> At the moment the project does not support sending emails, however all necessary contents of the letter are displayed in the data, which ensures correct operation. 
+> In current version emails sending is simulated by displaying emails in the console. Follow the link to confirm your account creation. 
 
 ### Tests:
 The test.py file has 80 tests including:
