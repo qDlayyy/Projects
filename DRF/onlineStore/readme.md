@@ -6,10 +6,14 @@
 - Create migrations; 
 - Migrate;
 - Use "python manage.py generate_base" to create nessessary units;
+- Use "celery -A store worker --loglevel=info" to allow celery work on the background;
+- Use "celery -A store beat --loglevel=info" to allow celery work with periodical tasks on the background;
 - Now it's ready to run.
 
-### Important:
-> In current version emails sending is simulated by displaying emails in the console. Follow the link to confirm your account creation. 
+### Celery:
+- Registration confirmation email and order confirmation email are now sent via celery;
+- Weekly email is sent to subscribers with the help of celery beat;
+- The notification of the comming delivery is cent via celery only on working days not later than 8 p.m. 
 
 ### Tests:
 The test.py file has 80 tests including:

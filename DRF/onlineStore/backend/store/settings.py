@@ -114,3 +114,32 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+
+
+LOGGING = {
+    'version': 1,
+    'desable_existing_loggers': False,
+    'handlers': {
+        'console':{
+            'class': 'logging.StreamHandler'
+        }
+    },
+    'loggers':{
+        'django':{
+            'handlers': ['console'],
+            'level': 'INFO'
+        },
+        'api':{
+            'handlers': ['console'],
+            'level': 'INFO'
+        }
+    }
+}

@@ -102,7 +102,6 @@ class ProductsSerializer(serializers.ModelSerializer):
     
 
 class CartItemSerializer(serializers.ModelSerializer):
-    
     name = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
@@ -115,7 +114,9 @@ class CartItemSerializer(serializers.ModelSerializer):
         ]
 
     def get_name(self, obj):
-        return obj.item.name if obj.item else None
+        if isinstance(obj, CartItem):
+            return obj.item.name if obj.item else None
+        return None
 
 
 class UserRegisterSerializer(serializers.ModelSerializer):

@@ -1,21 +1,17 @@
-from django.shortcuts import render
-from .models import Profile, Products, CartItem, Promocodes, StoreBase
-from .serializers import ProductsSerializer, CartItemSerializer, UserRegisterSerializer, OrderConfirmationSerilizer, ProfileSerializer, PromocodeSerializer, StoreBaseSerializer
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework import viewsets, generics, status
 from rest_framework.response import Response
-from django.utils.crypto import get_random_string
-from rest_framework.views import APIView
 
-from django.contrib.auth import login
-from django.contrib.auth.models import User
-from django.contrib.auth.tokens import default_token_generator
-from django.contrib.sites.shortcuts import get_current_site
+from django.utils.crypto import get_random_string
 from django.core.mail import EmailMessage
-from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
-from django.utils.encoding import force_bytes, force_str
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
+
+from .models import Profile, Products, CartItem, Promocodes, StoreBase
+from .serializers import ProductsSerializer, CartItemSerializer, UserRegisterSerializer, OrderConfirmationSerilizer, ProfileSerializer, PromocodeSerializer, StoreBaseSerializer
+from .tasks import send_order_confirmation_email, send_pre_delivery_email, send_registration_confimation_email
+from .service import adjust_delivery_notification
 
 
 class AdminStoreBaseView(generics.ListCreateAPIView):
@@ -151,7 +147,12 @@ class UserRegisterView(generics.CreateAPIView):
         user_profile.token = token
         user_profile.save()
 
-        self.send_email(user, token)
+        current_site = self.request.build_absolute_uri()
+        comfirmation_link = current_site + token
+        user_email = user.email
+        send_registration_confimation_email(comfirmation_link=comfirmation_link, user_email=user_email)
+
+        # self.send_email(user, token)
 
         comfirmation_link = self.request.build_absolute_uri() + token
 
@@ -275,6 +276,12 @@ class OrderView(generics.CreateAPIView):
         serializer = self.get_serializer(data=order_data)
         serializer.is_valid(raise_exception=True)
         order = serializer.save()
+
+        user_email = self.request.user.email
+        send_order_confirmation_email(user_email=user_email, order_id=order.pk)
+
+        notification_time = adjust_delivery_notification(order)
+        send_pre_delivery_email.apply_async((order.id, user_email), eta=notification_time)
 
         user_profile.cashback = round(float(final_price) * cashback_percentage / 100, 2)
         user_profile.save()
