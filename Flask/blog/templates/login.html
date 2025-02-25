@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Login
+{% endblock %}
+
+{% block content %}
+    <h1>Login</h1>
+    <form method="post" class="form-control">
+        <input type="text" name="username" placeholder="Username" class="form-control"></br>
+        <input type="text" name="password" placeholder="Password" class="form-control"></br>
+        <button type="submit" name="create" class="btn btn-success">Log in</button>
+    </form>
+    <div class="under_form">
+        <a href="{{ url_for('registration') }}" class="nav-link px-2">Don't have an account?</a>
+    </div>
+{% endblock %}

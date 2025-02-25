@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block title %}
+{{post.title}}
+{% endblock %}
+
+{% block content %}
+<div class="post_page_header">
+    <h1>By {{post.author }}</h1>
+    {% if is_deletable %}
+        <div class="trash_holder">
+            <a href="{{url_for('destroy', post_id=post_id)}}">
+                <i class="fa-solid fa-trash"></i>
+            </a>
+        </div>
+    {% endif %}
+</div>
+<div class="row">
+    <div class="col-md-6 item">
+        <div class="item-in">
+            <div class="post_meta">
+                <span>{{post.created_at}}</span>
+                <div class="star_holder">
+                    {% for star in star_list %}
+                        {{star | safe}}
+                    {% endfor %}
+                </div>
+            </div>
+            <h4>{{post.title}}</h4>
+            <div class="seperator"></div>
+            <p>{{post.content}}</p>
+            <i class="fa fa-long-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+    <div class="col-md-6">
+        {% if reply_comment_author %}
+            <div class="pre_text_holder">
+                <span class="text_in_form">Reply to {{reply_comment_author}}</span>
+                <a href="{{url_for('reply', comment_id=0, post_id=post_id)}}">
+                    <i class="fa-solid fa-xmark gap"></i>
+                </a>
+            </div>
+        {% else %}
+            <span class="text_in_form">Gorgeous comment</span>
+        {% endif %}
+        <form method="post" class="form-control formholder">
+            <textarea type="text" name="content" placeholder="Write your comment here" class="form-control"></textarea></br>
+            <button type="submit" name="create" class="btn btn-success">Publish</button>
+        </form>
+        <div class="rating_area">
+            <span>Rate the post: </span>
+            <a href="{{ url_for('rate', post_id=post.id, value=1) }}" class="vote_button">1</a>
+            <a href="{{ url_for('rate', post_id=post.id, value=2) }}" class="vote_button">2</a>
+            <a href="{{ url_for('rate', post_id=post.id, value=3) }}" class="vote_button">3</a>
+            <a href="{{ url_for('rate', post_id=post.id, value=4) }}" class="vote_button">4</a>
+            <a href="{{ url_for('rate', post_id=post.id, value=5) }}" class="vote_button">5</a>
+        </div>
+    </div>
+  </div>
+<div class="comment_section">
+    <h2>Comments Section</h2>
+    <div class="comments_wrapper">
+        {% if comments %}
+            {% for comment in comments %}
+                <div class="col-md-4 item">
+                    <div class="comment_meta">
+                        {% if comment.reply_to %}
+                            <span>reply to @{{comment.reply_to}}</span>
+                        {% else %}
+                            <span>Gorgeous comment</span>
+                        {% endif %}
+                        <span>{{comment.created_at}}</span>
+                    </div>
+                    <div class="item-in">
+                        <h4>{{comment.author}}</h4>
+                        <div class="seperator"></div>
+                        <p>{{comment.content}}</p>
+                        <a href="{{ url_for('reply', comment_id=comment.id, post_id=post_id) }}"> Reply to</a>
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="no-comments-plug">
+                <span>This post does't have any comments!</span>
+            </div>
+        {% endif %}    
+    </div>
+</div>
+{% endblock %}
